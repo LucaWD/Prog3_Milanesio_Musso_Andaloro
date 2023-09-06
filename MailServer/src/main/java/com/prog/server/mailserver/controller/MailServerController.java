@@ -274,7 +274,6 @@ public class MailServerController {
             sender.getSent().add(email);
             try {
                 server.saveToDatabase();
-                server.readFromDatabase();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
