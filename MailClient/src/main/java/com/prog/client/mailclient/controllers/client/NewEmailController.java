@@ -143,8 +143,8 @@ public class NewEmailController {
 
 	private boolean validateEmail(String email) {
 		boolean res;
-		String regex = "^[A-Za-z0-9+_.]+@(.+)$";
-		res = Pattern.compile(regex).matcher(email.trim()).matches();
+		String emailRegex = "^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})$";
+		res = Pattern.compile(emailRegex).matcher(email.trim()).matches();
 		return res;
 	}
 
