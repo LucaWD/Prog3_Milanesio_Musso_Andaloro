@@ -9,7 +9,6 @@ public class Request implements Serializable {
 
     private String request;
     private long lastInbox;
-    private long idEmail;
     private String emailAddress;
     private SerializableEmail email;
     private String section;
@@ -22,10 +21,8 @@ public class Request implements Serializable {
         this.section = section;
     }
 
-    public Request(String request, String emailAddress, SerializableEmail email) {
-        this.request = request;
-        this.emailAddress = emailAddress;
-        this.email = email;
+    public void setLastInbox(long lastInbox) {
+        this.lastInbox = lastInbox;
     }
 
     // this just for allEmails
@@ -39,6 +36,7 @@ public class Request implements Serializable {
         this.emailAddress = emailAddress;
         this.lastInbox = lastInbox;
     }
+
 
     // this for send email
     public Request(String request, SerializableEmail email) {
@@ -62,14 +60,6 @@ public class Request implements Serializable {
         this.email = email;
     }
 
-    @Override
-    public String toString() {
-        return "Request{" +
-                "request='" + request + '\'' +
-                ", idEmail='" + idEmail + '\'' +
-                ", email=" + email +
-                '}';
-    }
 
     public String getEmailAddress() {
         return emailAddress;
@@ -89,5 +79,16 @@ public class Request implements Serializable {
 
     public long getLastInbox() {
         return lastInbox;
+    }
+
+    @Override
+    public String toString() {
+        return "Request{" +
+                "request='" + request + '\'' +
+                ", lastInbox=" + lastInbox +
+                ", emailAddress='" + emailAddress + '\'' +
+                ", email=" + email +
+                ", section='" + section + '\'' +
+                '}';
     }
 }

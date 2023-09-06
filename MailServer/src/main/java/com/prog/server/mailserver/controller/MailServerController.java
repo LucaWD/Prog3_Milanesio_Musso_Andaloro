@@ -202,20 +202,25 @@ public class MailServerController {
 
         private Response setEmailRead(Request request) {
             try {
-                SerializableEmail email = (SerializableEmail) request.getEmail();
-
                 User user = server.getUser(request.getEmailAddress());
-
+                System.out.println(request);
                 boolean found = false;
                 for (int i = 0; i < user.getInbox().size() && !found; i++) {
-                    if (user.getInbox().get(i).getIdEmail() ==  email.getIdEmail()) {
+                    System.out.println(user.getInbox().get(i).getIdEmail());
+                    if (user.getInbox().get(i).getIdEmail() == request.getLastInbox()) {
+                        System.out.println("trovato");
                         user.getInbox().get(i).setRead(true);
                         found = true;
                     }
                 }
-                server.saveToDatabase();
-                server.readFromDatabase();
-                return new Response(true, "Email set as read");
+                if (found) {
+                    server.saveToDatabase();
+                    server.readFromDatabase();
+                    return new Response(true, "Email set as read");
+                } else {
+                    return new Response(false, "Email not found. Internal server error");
+                }
+
             } catch (Exception e) {
                 e.printStackTrace();
                 return new Response(false, "Internal server error");

@@ -317,14 +317,16 @@ public class ClientController {
 
         /*  case inbox => check if read or not   */
         if (sectionName.equals("inbox")) {
+            System.out.println(model.selectedEmail.getIdEmail());
+            System.out.println(model.emailAddressProperty().getValue());
             if (!model.selectedEmail.isRead()) {
                 model.selectedEmail.setRead(true);
                 Request request = new Request(
                         "setRead",
-                        model.emailAddressProperty().get(),
-                        model.selectedEmail.getIdEmail()
+                        model.emailAddressProperty().getValue(),
+                        (long)model.selectedEmail.getIdEmail()
                 );
-
+                System.out.print(request);
                 openConnection();
                 sendEmail(request);
                 try {
