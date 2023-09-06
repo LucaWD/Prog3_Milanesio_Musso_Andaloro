@@ -116,6 +116,7 @@ public class NewEmailController {
 				correct = true;
 			} else {
 				Alert a = new Alert(Alert.AlertType.ERROR, res.getMessage());
+				a.show();
 			}
 
 		} catch (IOException | ClassNotFoundException e) {
