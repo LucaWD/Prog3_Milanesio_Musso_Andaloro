@@ -68,6 +68,7 @@ public class MailServerController {
 
     @FXML
     public void startServer() {
+      server.handleServerStatus(true);
         try {
             serverSocket = new ServerSocket(9000);
             server.readFromDatabase();
@@ -264,10 +265,8 @@ public class MailServerController {
                 receivers.add(usr);
             }
 
-            for (User usr : receivers) {
-                email.setIdEmail(createNewId(usr.getInbox()));
-                usr.getInbox().add(email);
-            }
+            handleNewInbox(receivers,email);
+
             User sender = server.getUser(email.getSender());
             newIdSent = createNewId(sender.getSent());
             sender.getSent().add(email);
@@ -277,6 +276,13 @@ public class MailServerController {
                 throw new RuntimeException(e);
             }
             return new Response(true, "Email successfully sent", newIdSent);
+        }
+
+        private synchronized void handleNewInbox(ArrayList<User> receivers,SerializableEmail email){
+            for (User usr : receivers) {
+                email.setIdEmail(createNewId(usr.getInbox()));
+                usr.getInbox().add(email);
+            }
         }
 
         private Response deleteEmail(Request request) {
@@ -318,7 +324,7 @@ public class MailServerController {
                 }
                 if (section.equals("inbox") || section.equals("sent")) {
                     idTrashed = createNewId(user.getTrashed());
-                   emailTrashed.setIdEmail(idTrashed); // email could be both in send and inbox so change id for trashed
+                    emailTrashed.setIdEmail(idTrashed); // email could be both in send and inbox so change id for trashed
                     user.getTrashed().add(emailTrashed);
                     message = "Email added to trashed";
                 }

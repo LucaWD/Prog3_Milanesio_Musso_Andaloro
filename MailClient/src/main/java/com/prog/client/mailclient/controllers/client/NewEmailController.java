@@ -121,6 +121,8 @@ public class NewEmailController {
 
 		} catch (IOException | ClassNotFoundException e) {
 			e.printStackTrace();
+			Alert a = new Alert(Alert.AlertType.ERROR, "Internal server error, try later or contact support for help");
+			a.show();
 		} finally {
 			controller.closeConnection();
 		}

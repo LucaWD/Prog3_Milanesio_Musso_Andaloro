@@ -110,20 +110,7 @@ public class ClientController {
         trashedCount.textProperty().bind(model.trashedCounterProperty());
         model.emptyEmail = null;
 
-        boolean res = allFromServer();
-        if (res) {
-            bindList(model.inboxProperty());
-            sectionName = "inbox";
-            model.selectedEmail = model.inboxProperty().get(0);
-            updateDetailView(model.selectedEmail);
-            inboxBtn.setStyle(" -fx-background-color: #CAC9D2;\n" + " -fx-background-radius: 5px;");
-        } else {
-            updateDetailView(model.emptyEmail);
-            Alert a = new Alert(Alert.AlertType.INFORMATION, "No received emails to display at the moment.");
-            a.show();
-        }
         handleTimerLoadEmails(true);
-
     }
 
 
@@ -327,9 +314,9 @@ public class ClientController {
                         (long)model.selectedEmail.getIdEmail()
                 );
                 System.out.print(request);
-                openConnection();
-                sendEmail(request);
                 try {
+                    openConnection();
+                    sendEmail(request);
                     Response response = getServerResponse();
                     System.out.println(response);
                 } catch (IOException | ClassNotFoundException e) {
@@ -354,14 +341,13 @@ public class ClientController {
         }
     }
 
-    protected void openConnection() {
+    protected void openConnection() throws IOException {
         try {
             socket = new Socket(InetAddress.getLocalHost(), 9000);
             objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
             objectInputStream = new ObjectInputStream(socket.getInputStream());
-        } catch (IOException e) {
-            e.printStackTrace();
-
+        } catch (Exception e) {
+           throw new IOException();
         }
     }
 
@@ -420,6 +406,9 @@ public class ClientController {
                 ArrayList<Email> sent = new ArrayList<>();
                 ArrayList<Email> trashed = new ArrayList<>();
                 if (!res.getInbox().isEmpty()) {
+                    bindList(model.inboxProperty());
+                    sectionName = "inbox";
+                    inboxBtn.setStyle(" -fx-background-color: #CAC9D2;\n" + " -fx-background-radius: 5px;");
                     response = true;
                     System.out.println(res.getInbox().size());
                     System.out.println(res.getInbox());
@@ -434,6 +423,10 @@ public class ClientController {
                         }
                         model.inboxProperty().add(e);
                     }
+                    model.selectedEmail = model.inboxProperty().get(0);
+                    updateDetailView(model.selectedEmail);
+                } else {
+                    updateDetailView(model.emptyEmail);
                 }
                 if (!res.getSent().isEmpty()) {
                     for (SerializableEmail sEmail : res.getSent()) {
@@ -466,7 +459,7 @@ public class ClientController {
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-
+            closeConnection();
         } finally {
             closeConnection();
         }
@@ -527,7 +520,7 @@ public class ClientController {
     public void handleTimerLoadEmails(boolean open) {
         if (open && scheduledExecutorService == null) {
             scheduledExecutorService = Executors.newScheduledThreadPool(1);
-            scheduledExecutorService.scheduleAtFixedRate(new emailDownload(), 5, 5, TimeUnit.SECONDS);
+            scheduledExecutorService.scheduleAtFixedRate(new emailDownload(), 0, 5, TimeUnit.SECONDS);
             System.out.println("ok schedule timer");
         } else if (!open && scheduledExecutorService != null) {
             scheduledExecutorService.shutdown();
@@ -538,7 +531,11 @@ public class ClientController {
         public emailDownload() {}
         @Override
         public void run() {
-            updateFromServer();
+            if(model.inboxProperty().getSize() > 0 || model.sentProperty().getSize() > 0 ||model.trashedProperty().getSize() > 0){
+                updateFromServer();
+            }else{
+                allFromServer();
+            }
         }
     }
 
