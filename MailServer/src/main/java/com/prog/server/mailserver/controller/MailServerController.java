@@ -200,25 +200,24 @@ public class MailServerController {
             }
         }
 
+
         private Response setEmailRead(Request request) {
             try {
+                long idEmailRequest = request.getLastInbox();
                 User user = server.getUser(request.getEmailAddress());
-                System.out.println(request);
+
                 boolean found = false;
                 for (int i = 0; i < user.getInbox().size() && !found; i++) {
-                    System.out.println(user.getInbox().get(i).getIdEmail());
-                    if (user.getInbox().get(i).getIdEmail() == request.getLastInbox()) {
-                        System.out.println("trovato");
+                    if (user.getInbox().get(i).getIdEmail() ==  idEmailRequest) {
                         user.getInbox().get(i).setRead(true);
                         found = true;
                     }
                 }
                 if (found) {
                     server.saveToDatabase();
-                    server.readFromDatabase();
                     return new Response(true, "Email set as read");
                 } else {
-                    return new Response(false, "Email not found. Internal server error");
+                    return new Response(false, "Internal server error. Try later or contact support");
                 }
 
             } catch (Exception e) {
@@ -284,30 +283,33 @@ public class MailServerController {
             try {
                 String message;
                 long idTrashed = 0; // in case of sent or inbox we have to add email in trashed, so I'll return idTrashed to client
-                SerializableEmail emailToDelete = (SerializableEmail) request.getEmail();
+                long emailToDelete = request.getLastInbox();
+                SerializableEmail emailTrashed = new SerializableEmail();
                 synchronized (logsTxt) {
-                    server.addRequest("Incoming request from " + request.getEmailAddress()  + ": Deleting email with id " + emailToDelete.getIdEmail() + "\n\n");
+                    server.addRequest("Incoming request from " + request.getEmailAddress()  + ": Deleting email with id " + emailToDelete + "\n\n");
                 }
                 User user = server.getUser(request.getEmailAddress());
                 String section = request.getSection();
                 message = "Email successfully deleted";
                 if (section.equals("inbox")) {
                     for (int i = 0; i < user.getInbox().size(); i++) {
-                        if (user.getInbox().get(i).getIdEmail() == emailToDelete.getIdEmail()) {
+                        if (user.getInbox().get(i).getIdEmail() == emailToDelete) {
+                            emailTrashed = user.getInbox().get(i);
                             user.getInbox().remove(i);
                         }
                     }
                 }
                 if (section.equals("sent")) {
                     for (int i = 0; i < user.getSent().size(); i++) {
-                        if (user.getSent().get(i).getIdEmail() == emailToDelete.getIdEmail()) {
+                        if (user.getSent().get(i).getIdEmail() == emailToDelete) {
+                            emailTrashed = user.getInbox().get(i);
                             user.getSent().remove(i);
                         }
                     }
                 }
                 if (section.equals("trashed")) {
                     for (int i = 0; i < user.getTrashed().size(); i++) {
-                        if (user.getTrashed().get(i).getIdEmail() == emailToDelete.getIdEmail()) {
+                        if (user.getTrashed().get(i).getIdEmail() == emailToDelete) {
                             user.getTrashed().remove(i);
                         }
                     }
@@ -316,13 +318,12 @@ public class MailServerController {
                 }
                 if (section.equals("inbox") || section.equals("sent")) {
                     idTrashed = createNewId(user.getTrashed());
-                    emailToDelete.setIdEmail(idTrashed); // email could be both in send and inbox so change id for trashed
-                    user.getTrashed().add(emailToDelete);
+                   emailTrashed.setIdEmail(idTrashed); // email could be both in send and inbox so change id for trashed
+                    user.getTrashed().add(emailTrashed);
                     message = "Email added to trashed";
                 }
                 try {
                     server.saveToDatabase();
-                    server.readFromDatabase();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

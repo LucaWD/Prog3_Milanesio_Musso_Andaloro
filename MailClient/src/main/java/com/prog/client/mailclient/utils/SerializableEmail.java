@@ -15,7 +15,7 @@ public class SerializableEmail implements Serializable {
     private LocalDateTime dateTime;
     private boolean isRead;
 
-
+    public SerializableEmail(){}
     public SerializableEmail(Email mail) {
         this.idEmail = mail.getIdEmail();
         this.sender = mail.getSender().get();

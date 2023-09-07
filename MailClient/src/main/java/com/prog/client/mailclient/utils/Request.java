@@ -20,6 +20,12 @@ public class Request implements Serializable {
         this.email = email;
         this.section = section;
     }
+    public Request(String request, String emailAddress, long idEmail, String section) {
+        this.request = request;
+        this.emailAddress = emailAddress;
+        this.lastInbox = idEmail;
+        this.section = section;
+    }
 
     public void setLastInbox(long lastInbox) {
         this.lastInbox = lastInbox;

@@ -243,18 +243,18 @@ public class ClientController {
     public void onDeleteBtnClick(ActionEvent event) {
         try {
             openConnection();
-            SerializableEmail email = new SerializableEmail(
-                    model.selectedEmail
-            );
-            Request request = new Request("delete", model.emailAddressProperty().get(), email, sectionName); // the server should know in which section delete the email because could be in inbox and sent
+
+            Email emailToDelete = model.selectedEmail;
+            System.out.print(emailToDelete);
+            Request request = new Request("delete", model.emailAddressProperty().get(), emailToDelete.getIdEmail(), sectionName); // the server should know in which section delete the email because could be in inbox and sent
             sendEmail(request);
             Response response = getServerResponse();
             if (response.isSuccess()) {
                 switch (sectionName) {
                     case "inbox" -> {
-                        model.deleteInbox(model.selectedEmail);
-                        model.selectedEmail.setIdEmail(response.getIdEmail());
-                        Platform.runLater(() -> model.trashedProperty().add(model.selectedEmail)); // add inbox email to trashed
+                        model.deleteInbox(emailToDelete);
+                       emailToDelete.setIdEmail(response.getIdEmail());
+                        Platform.runLater(() -> model.trashedProperty().add(emailToDelete)); // add inbox email to trashed
                         if (model.inboxProperty().size() > 0) {
                             model.selectedEmail = model.inboxProperty().get(0);
                             updateDetailView(model.selectedEmail);
@@ -262,15 +262,15 @@ public class ClientController {
                     }
                     case "sent" -> {
                         model.deleteSent(model.selectedEmail);
-                        model.selectedEmail.setIdEmail(response.getIdEmail());
-                        Platform.runLater(() -> model.trashedProperty().add(model.selectedEmail));  // add sent email to trashed
+                        emailToDelete.setIdEmail(response.getIdEmail());
+                        Platform.runLater(() -> model.trashedProperty().add(emailToDelete));  // add sent email to trashed
                         if (model.sentProperty().size() > 0) {
                             model.selectedEmail = model.sentProperty().get(0);
                             updateDetailView(model.selectedEmail);
                         }
                     }
                     case "trashed" -> {
-                        model.deleteTrashed(model.selectedEmail);
+                        model.deleteTrashed(emailToDelete);
                         if (model.trashedProperty().size() > 0) {
                             model.selectedEmail = model.trashedProperty().get(0);
                             updateDetailView(model.selectedEmail);
@@ -363,7 +363,6 @@ public class ClientController {
             e.printStackTrace();
 
         }
-
     }
 
     protected void closeConnection() {
