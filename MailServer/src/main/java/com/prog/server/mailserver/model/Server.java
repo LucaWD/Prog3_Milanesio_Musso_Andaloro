@@ -45,7 +45,7 @@ public class Server {
     }
 
     // request from client
-    public synchronized void addRequest(String request) {
+    public void addRequest(String request) {
         String currentText = logs.getValue();
         String newText = request + currentText;
         Platform.runLater(() -> logs.setValue(newText));

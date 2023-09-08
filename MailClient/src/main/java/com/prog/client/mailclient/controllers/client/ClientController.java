@@ -388,8 +388,7 @@ public class ClientController {
     *   The server will be notified.
     *
      */
-    protected boolean allFromServer() {
-        boolean response = false;
+    protected void allFromServer() {
         try {
             Request request;
             int newInbox = 0;
@@ -409,7 +408,6 @@ public class ClientController {
                     bindList(model.inboxProperty());
                     sectionName = "inbox";
                     inboxBtn.setStyle(" -fx-background-color: #CAC9D2;\n" + " -fx-background-radius: 5px;");
-                    response = true;
                     System.out.println(res.getInbox().size());
                     System.out.println(res.getInbox());
                     for (SerializableEmail sEmail : res.getInbox()) {
@@ -423,10 +421,12 @@ public class ClientController {
                         }
                         model.inboxProperty().add(e);
                     }
-                    model.selectedEmail = model.inboxProperty().get(0);
-                    updateDetailView(model.selectedEmail);
+                  Platform.runLater(() -> {
+                      model.selectedEmail = model.inboxProperty().get(0);
+                      updateDetailView(model.selectedEmail);
+                  });
                 } else {
-                    updateDetailView(model.emptyEmail);
+                    Platform.runLater(() ->  updateDetailView(model.emptyEmail));
                 }
                 if (!res.getSent().isEmpty()) {
                     for (SerializableEmail sEmail : res.getSent()) {
@@ -463,7 +463,6 @@ public class ClientController {
         } finally {
             closeConnection();
         }
-        return response;
     }
     protected void updateFromServer() {
         try {
